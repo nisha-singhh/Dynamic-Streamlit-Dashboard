@@ -1,0 +1,420 @@
+/* ===== WHOLE PAGE ===== */
+.stApp {
+    background: linear-gradient(135deg, #060816, #090d24, #14002e);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== REMOVE DEFAULT SPACE ===== */
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 0rem;
+    max-width: 100%;
+}
+
+/* ===== HERO ===== */
+.hero-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* ===== LOGO ===== */
+.logo-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 20%; /* geometric style */
+    margin: auto;
+    background: linear-gradient(135deg, #3b82f6, #9333ea);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 42px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0 0 40px rgba(147,51,234,0.6), 0 0 80px rgba(59,130,246,0.4);
+}
+
+/* ===== TITLE ===== */
+.main-title {
+    font-size: 72px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+}
+
+/* ===== SUBTITLE ===== */
+.sub-title {
+    color: #bfc7d5;
+    font-size: 24px;
+    margin-top: 10px;
+    margin-bottom: 40px;
+}
+
+/* ===== LOGIN CARD ===== */
+.login-card,
+[data-testid="stExpander"], [data-testid="stTabContent"], .stTabs {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 40px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.6);
+    width: 350px;
+    margin: auto;
+}
+
+/* ===== FORM TITLE ===== */
+.form-title {
+    color: white;
+    font-size: 42px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+/* ===== INPUT LABEL ===== */
+label {
+    color: white !important;
+    font-size: 17px !important;
+}
+
+/* ===== INPUT ===== */
+.stTextInput input {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: white !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+}
+.stTextInput input:focus {
+    outline: none;
+    border: 1px solid #9333ea !important;
+    box-shadow: 0 0 10px rgba(147,51,234,0.7);
+}
+
+/* ===== BUTTON ===== */
+.stButton button {
+    width: 100%;
+    background: linear-gradient(90deg, #3b82f6, #9333ea);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: 0.3s;
+}
+.stButton button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(147,51,234,0.6);
+}
+
+/* ===== GOOGLE BUTTON ===== */
+.google-btn {
+    width: 100%;
+    background: white;
+    color: #333;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.3s;
+}
+.google-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+/* ===== TABS ===== */
+button[data-baseweb="tab"] {
+    color: white !important;
+    font-size: 18px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.06) !important;
+    margin-right: 10px;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(90deg, #3b82f6, #9333ea) !important;
+}
+
+/* ===== ALERTS ===== */
+.stAlert {
+    border-radius: 12px;
+}
+
+/* ===== FOOTER ===== */
+.footer-text {
+    text-align: center;
+    color: #bfc7d5;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 48px;
+    }
+    .sub-title {
+        font-size: 18px;
+    }
+    .form-title {
+        font-size: 32px;
+    }
+    .hero-section {
+        text-align: center;
+    }
+    .main-title {
+        color: white;
+    }
+    .hero-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 60px;
+    max-width: 1100px;
+    margin: auto;
+    padding: 40px;
+}
+
+.left-side {
+    flex: 1;
+    text-align: left;
+}
+
+.login-card {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .main-title { font-size: 48px; }
+    .sub-title { font-size: 18px; }
+    .form-title { font-size: 32px; }
+    .hero-section { flex-direction: column; text-align: center; }
+}
+
+}
+  ------------------------------------------------------------------------------------------------------------
+  import streamlit as st
+import sqlite3
+import os
+
+
+# ================= PAGE CONFIG =================
+st.set_page_config(
+    page_title="Login",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# ================= LOAD CSS =================
+try:
+    with open("assets/style.css") as f:
+        st.markdown(
+            f"<style>{f.read()}</style>",
+            unsafe_allow_html=True
+        )
+except Exception as e:
+
+    st.error(f"CSS Error: {e}")
+
+# ================= HIDE STREAMLIT UI =================
+st.markdown("""
+<style>
+#MainMenu {visibility:hidden;}
+footer {visibility:hidden;}
+header {visibility:hidden;}
+[data-testid="stSidebar"] {display:none;}
+</style>
+""", unsafe_allow_html=True)
+
+# ================= DATABASE =================
+conn = sqlite3.connect("database.db", check_same_thread=False)
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users(
+    username TEXT UNIQUE,
+    password TEXT
+)
+""")
+conn.commit()
+
+# ================= SESSION =================
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# ================= SIGNUP FUNCTION =================
+def signup():
+    st.subheader("Create Account")
+    new_user = st.text_input("Username", key="signup_user", placeholder="Enter username")
+    new_password = st.text_input("Password", type="password", key="signup_pass", placeholder="Enter password")
+    
+    if st.button("Signup", use_container_width=True):
+        if new_user and new_password:
+            cursor.execute("INSERT INTO users VALUES (?, ?)", (new_user, new_password))
+            conn.commit()
+            st.success("Account Created Successfully!")
+        else:
+            st.warning("Please fill all fields")
+
+# ================= LOGIN FUNCTION =================
+def login():
+    st.subheader("Login to your account")
+    username = st.text_input("Username", key="login_user", placeholder="Enter your username")
+    password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
+    
+    if st.button("Login", use_container_width=True):
+        cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+        data = cursor.fetchone()
+        print(data)
+        if data:
+            st.session_state.logged_in = True
+            print(st.session_state.logged_in)
+            st.rerun()
+        else:
+            st.error("Invalid Username or Password")
+
+# ================= MAIN LOGIC =================
+if st.session_state.logged_in:
+    try:
+        st.switch_page("pages/dashboard.py")
+    except Exception as e:
+        print(st.error(e))
+
+
+else:
+    # ===== HERO SECTION WITH CSS =====
+    st.markdown('<div class="hero-section">', unsafe_allow_html=True)
+
+    left, right = st.columns([1, 1])
+
+    with left:
+        st.markdown('<div class="left-side">', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-title">Welcome Back</h1>', unsafe_allow_html=True)
+        st.markdown('<p class="sub-title">Sign in to continue to your dashboard</p>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        st.markdown('<div class="login-card">', unsafe_allow_html=True)
+        st.markdown('<div class="logo-circle">⚡</div>', unsafe_allow_html=True)
+
+        tab1, tab2 = st.tabs(["Login", "Signup"])
+        with tab1:
+            login()
+        with tab2:
+            signup()
+
+        st.markdown("""
+            <div class="google-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
+                Login with Google
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+            <div class="footer-text">
+                Secure • Fast • Reliable <br>
+                Your data is protected with enterprise-grade security.
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+
+# import streamlit as st
+# import sqlite3
+
+# # ================= PAGE CONFIG =================
+# st.set_page_config(page_title="Login", layout="wide")
+
+# # ================= LOAD CSS =================
+# try:
+#     with open("assets/style.css") as f:
+#         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+# except Exception as e:
+#     st.error(f"CSS Error: {e}")
+
+# # ================= DATABASE =================
+# conn = sqlite3.connect("database.db", check_same_thread=False)
+# cursor = conn.cursor()
+# cursor.execute("CREATE TABLE IF NOT EXISTS users(username TEXT UNIQUE, password TEXT)")
+# conn.commit()
+
+# # ================= SESSION =================
+# if "logged_in" not in st.session_state:
+#     st.session_state.logged_in = False
+
+# # ================= FUNCTIONS =================
+# def signup():
+#     st.markdown("<h3 style='text-align: center;'>Create Account</h3>", unsafe_allow_html=True)
+#     new_user = st.text_input("Username", key="signup_user", placeholder="Enter username")
+#     new_password = st.text_input("Password", type="password", key="signup_pass", placeholder="Enter password")
+#     if st.button("Signup", use_container_width=True):
+#         if new_user and new_password:
+#             try:
+#                 cursor.execute("INSERT INTO users VALUES (?, ?)", (new_user, new_password))
+#                 conn.commit()
+#                 st.success("Account Created!")
+#             except:
+#                 st.error("Username already exists")
+#         else:
+#             st.warning("Fill all fields")
+
+# def login():
+#     st.markdown("<h3 style='text-align: center;'>Login to your account</h3>", unsafe_allow_html=True)
+#     username = st.text_input("Username", key="login_user", placeholder="Enter your username")
+#     password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
+#     if st.button("Login", use_container_width=True):
+#         cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+#         if cursor.fetchone():
+#             st.session_state.logged_in = True
+#             st.rerun()
+#         else:
+#             st.error("Invalid credentials")
+
+# # ================= MAIN UI =================
+# if st.session_state.logged_in:
+#     st.switch_page("pages/dashboard.py")
+# else:
+#     # Use 3 columns for centering: [left_space, card_width, right_space]
+#     # Adjusting ratios for a more vertical, balanced card
+#     left, center, right = st.columns([1, 1.6, 1])
+
+#     with center:
+#         # Add extra space at top
+#         st.write("##")
+        
+#         # 1. Logo & Welcome (Inside 'center' so it aligns with the card)
+#         st.markdown("<div class='logo-text'>⬢</div>", unsafe_allow_html=True)
+#         st.markdown("<h1 style='text-align: center; color: white; margin-bottom:0; font-size: 3rem;'>Welcome Back</h1>", unsafe_allow_html=True)
+#         st.markdown("<p style='text-align: center; color: rgba(255,255,255,0.5); font-size: 1.1rem;'>Sign in to continue to your dashboard</p>", unsafe_allow_html=True)
+        
+#         st.write("##") # Spacer before the card starts
+
+#         # 2. The Login/Signup Card starts here
+#         tab1, tab2 = st.tabs(["Login", "Signup"])
+        
+#         with tab1:
+#             login()
+#             # Optional: Add "Forgot Password?" below the fields
+#             st.markdown("<p style='text-align: right; font-size: 0.8rem; color: #3b82f6;'>Forgot Password?</p>", unsafe_allow_html=True)
+            
+#         with tab2:
+#             signup()
+            
+#         # 3. Footer
+#         st.markdown("<br><p style='text-align: center; font-size: 12px; color: rgba(255,255,255,0.25);'>Secure • Fast • Reliable</p>", unsafe_allow_html=True)
