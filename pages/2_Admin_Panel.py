@@ -37,11 +37,11 @@ st.markdown("---")
 
 # 3. User Overview Table
 st.subheader("👥 All Registered Users")
-df_users = pd.read_sql("SELECT username, is_admin FROM users", conn)
-
+df_users = pd.read_sql("SELECT username, password, is_admin FROM users", conn)
 # Make the table look cleaner
 df_users['Role'] = df_users['is_admin'].apply(lambda x: "⭐ Admin" if x == 1 else "👤 User")
-st.dataframe(df_users[['username', 'Role']], use_container_width=True)
+df_users['Password'] = "🔒 ********"
+st.dataframe(df_users[['username', 'Password', 'Role']], use_container_width=True)
 
 st.markdown("---")
 
