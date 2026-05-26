@@ -23,10 +23,14 @@ def init_db():
         pass # Column already exists
     
     # Set the admin (Professional touch: change 'nisha' to your username)
-    cursor.execute("UPDATE users SET is_admin = 1 WHERE username = 'nisha'")
-    
+    cursor.execute("""
+        UPDATE users 
+        SET is_admin = 1 
+        WHERE username = 'nisha' AND password = 'singh'
+    """)    
     conn.commit()
     return conn, cursor
+
 
 conn, cursor = init_db()
 
