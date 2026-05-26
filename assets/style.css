@@ -1,274 +1,23 @@
-
-
+/* ================= 1. GLOBAL APP STYLING ================= */
 .stApp {
-
-    background:
-    linear-gradient(
-        135deg,
-        #060816,
-        #090d24,
-        #14002e
-    );
-
+    background: linear-gradient(135deg, #060816, #090d24, #14002e);
     min-height: 100vh;
 }
 
-
-/* ===== REMOVE DEFAULT SPACE ===== */
-
 .block-container {
-
     padding-top: 1rem;
     padding-bottom: 0rem;
     max-width: 100%;
 }
 
-
-/* ===== HERO ===== */
-
-.hero-section {
-
-    text-align: center;
-    margin-top: 30px;
-}
-
-
-/* ===== LOGO ===== */
-
-.logo-circle {
-
-    width: 85px;
-    height: 85px;
-
-    border-radius: 50%;
-
-    margin: auto;
-
-    background:
-    linear-gradient(
-        135deg,
-        #3b82f6,
-        #9333ea
-    );
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: white;
-
-    font-size: 42px;
-    font-weight: bold;
-
-    margin-bottom: 20px;
-
-    box-shadow:
-    0 0 30px rgba(147,51,234,0.5);
-}
-
-
-/* ===== TITLE ===== */
-
-.main-title {
-
-    font-size: 72px;
-    font-weight: 800;
-
-    color: white;
-
-    line-height: 1.1;
-}
-
-
-/* ===== SUBTITLE ===== */
-
-.sub-title {
-
-    color: #bfc7d5;
-
-    font-size: 24px;
-
-    margin-top: 10px;
-    margin-bottom: 40px;
-}
-
-
-/* ===== LOGIN CARD ===== */
-
-[data-testid="stExpander"], [data-testid="stTabContent"], .stTabs {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 28px;
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
-}
-
-
-/* ===== FORM TITLE ===== */
-
-.form-title {
-
-    color: white;
-
-    font-size: 42px;
-
-    font-weight: 700;
-
-    text-align: center;
-
-    margin-bottom: 35px;
-}
-
-
-/* ===== INPUT LABEL ===== */
-
-label {
-
-    color: white !important;
-
-    font-size: 17px !important;
-}
-
-
-/* ===== INPUT ===== */
-
-.stTextInput input {
-
-    background:
-    rgba(255,255,255,0.08) !important;
-
-    border:
-    1px solid rgba(255,255,255,0.12) !important;
-
-    color: white !important;
-
-    border-radius: 14px !important;
-
-    padding: 14px !important;
-
-    font-size: 16px !important;
-}
-
-
-/* ===== BUTTON ===== */
-
-.stButton button {
-
-    width: 100%;
-
-    background:
-    linear-gradient(
-        90deg,
-        #3b82f6,
-        #9333ea
-    );
-
-    color: white;
-
-    border: none;
-
-    border-radius: 14px;
-
-    padding: 14px;
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-    margin-top: 15px;
-
-    transition: 0.3s;
-}
-
-
-/* ===== BUTTON HOVER ===== */
-
-.stButton button:hover {
-
-    transform: scale(1.02);
-
-    box-shadow:
-    0 0 20px rgba(147,51,234,0.6);
-}
-
-
-/* ===== TABS ===== */
-
-button[data-baseweb="tab"] {
-
-    color: white !important;
-
-    font-size: 18px !important;
-
-    border-radius: 12px !important;
-
-    background:
-    rgba(255,255,255,0.06) !important;
-
-    margin-right: 10px;
-}
-
-
-/* ===== ACTIVE TAB ===== */
-
-button[data-baseweb="tab"][aria-selected="true"] {
-
-    background:
-    linear-gradient(
-        90deg,
-        #3b82f6,
-        #9333ea
-    ) !important;
-}
-
-
-/* ===== ALERTS ===== */
-
-.stAlert {
-
-    border-radius: 12px;
-}
-
-
-/* ===== MOBILE RESPONSIVE ===== */
-
-@media (max-width: 768px) {
-
-    .main-title {
-
-        font-size: 48px;
-    }
-
-    .sub-title {
-
-        font-size: 18px;
-    }
-
-    .form-title {
-
-        font-size: 32px;
-    }
-
-    .hero-section{
-
-    text-align:center;
-    }
-
-    .main-title{
-
-    color:white;
-    }
-
-    /* ===== HERO LAYOUT ===== */
+/* ================= 2. DESKTOP LAYOUT (Default) ================= */
 .hero-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 60px;
     max-width: 1100px;
-    margin: auto;
+    margin: 30px auto;
     padding: 40px;
 }
 
@@ -281,10 +30,145 @@ button[data-baseweb="tab"][aria-selected="true"] {
     flex: 1;
 }
 
-@media (max-width: 768px) {
-    .main-title { font-size: 48px; }
-    .sub-title { font-size: 18px; }
-    .form-title { font-size: 32px; }
-    .hero-section { flex-direction: column; text-align: center; }
+.logo-circle {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #9333ea);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 42px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(147,51,234,0.5);
 }
+
+.main-title {
+    font-size: 72px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+}
+
+.sub-title {
+    color: #bfc7d5;
+    font-size: 24px;
+    margin-top: 10px;
+    margin-bottom: 40px;
+}
+
+/* ================= 3. UI COMPONENTS (Glassmorphism) ================= */
+[data-testid="stExpander"], [data-testid="stTabContent"], .stTabs {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.form-title {
+    color: white;
+    font-size: 42px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+label {
+    color: white !important;
+    font-size: 17px !important;
+}
+
+.stTextInput input {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: white !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+}
+
+.stButton button {
+    width: 100%;
+    background: linear-gradient(90deg, #3b82f6, #9333ea);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: 0.3s;
+}
+
+.stButton button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(147,51,234,0.6);
+}
+
+button[data-baseweb="tab"] {
+    color: white !important;
+    font-size: 18px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.06) !important;
+    margin-right: 10px;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(90deg, #3b82f6, #9333ea) !important;
+}
+
+.stAlert {
+    border-radius: 12px;
+}
+
+/* ================= 4. MOBILE RESPONSIVE (Fixes) ================= */
+@media (max-width: 768px) {
+    .hero-section {
+        flex-direction: column; 
+        text-align: center;
+        padding: 20px;
+        gap: 30px;
+        margin-top: 10px;
+    }
+
+    .left-side {
+        text-align: center;
+        order: 1; /* Title upar aayega */
+    }
+
+    .login-card {
+        width: 100%;
+        order: 2; /* Card niche aayega */
+    }
+
+    .logo-circle {
+        margin: 0 auto 15px auto; /* Logo center mein */
+        width: 65px;
+        height: 65px;
+        font-size: 32px;
+    }
+
+    .main-title {
+        font-size: 42px !important; /* Mobile ke liye font chota kiya */
+    }
+
+    .sub-title {
+        font-size: 18px !important;
+        margin-bottom: 25px;
+    }
+
+    .form-title {
+        font-size: 30px !important;
+    }
+
+    button[data-baseweb="tab"] {
+        font-size: 14px !important;
+        padding: 8px !important;
+        margin-right: 5px;
+    }
 }

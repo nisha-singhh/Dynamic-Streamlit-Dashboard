@@ -4,8 +4,8 @@ import pandas as pd
 import os
 import warnings
 import plotly.figure_factory as ff
-import sqlite3  # Naya Import
-import base64   # Naya Import
+import sqlite3  
+import base64   
 
 # ================= 1. PAGE CONFIG =================
 st.set_page_config(
@@ -21,7 +21,6 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.stop()
 
 # ================= 3. DATABASE INITIALIZATION (CRITICAL FIX) =================
-# Ye lines sidebar se pehle honi chahiye taaki 'cursor' initialize ho jaye
 conn = sqlite3.connect("database.db", check_same_thread=False)
 cursor = conn.cursor()
 
@@ -29,17 +28,12 @@ cursor = conn.cursor()
 with st.sidebar:
     # 1. Check karein ki username session mein hai
     if "username" in st.session_state and st.session_state.username:
-        
-        # --- ERROR PROTECTION START ---
         try:
             # Database se image fetch karein
             cursor.execute("SELECT profile_pic FROM users WHERE username = ?", (st.session_state.username,))
             res = cursor.fetchone()
         except Exception as e:
-            # Agar database issue ho toh crash na ho
             res = None
-        # --- ERROR PROTECTION END ---
-        
         # Circular Profile Pic ke liye CSS (Refined)
         st.markdown("""
             <style>
