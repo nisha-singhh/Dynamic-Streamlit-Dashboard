@@ -17,55 +17,70 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.info("Please login to access the dashboard.")
     st.switch_page("main.py")
     st.stop()
-
 # ================= SIDEBAR PROFILE SECTION =================
 with st.sidebar:
     # 1. Database se image fetch karein
-    cursor.execute("SELECT profile_pic FROM users WHERE username = ?", (st.session_state.username,))
-    res = cursor.fetchone()
-    
-    # 2. Circular Profile Pic ke liye Custom CSS
-    st.markdown("""
-        <style>
-            .profile-pic {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                width: 100px;
-                height: 100px;
-                border-radius: 50%; /* Image ko gol banane ke liye */
-                object-fit: cover;
-                border: 2px solid #00d4ff; /* Professional Border */
-            }
-            .user-name {
-                text-align: center;
-                font-size: 18px;
-                font-weight: bold;
-                margin-top: 10px;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
-    # 3. Avatar dikhane ka logic
-    if res and res[0]:
-        # Agar user ne photo upload ki hai
-        st.image(res[0], width=100) # niche wali CSS circle property auto-apply nahi hogi st.image par directly
-        # Tip: Custom HTML use karke aur better dikha sakte hain, par abhi ke liye width=100 theek hai.
-    else:
-        # Default Avatar
-        st.image("https://www.w3schools.com/howto/img_avatar.png", width=100)
+    if "username" in st.session_state and st.session_state.username:
+        cursor.execute("SELECT profile_pic FROM users WHERE username = ?", (st.session_state.username,))
+        res = cursor.fetchone()
         
-    st.markdown(f'<p class="user-name">Welcome, {st.session_state.username}!</p>', unsafe_allow_html=True)
-    st.write(f"Status: **Online** 🟢")
-    
-    st.markdown("---")
+        # Circular Profile Pic ke liye CSS (Refined)
+        st.markdown("""
+            <style>
+                .profile-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 20px;
+                }
+                .circular-img {
+                    width: 120px;
+                    height: 120px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 3px solid #00d4ff;
+                    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+                }
+                .user-name {
+                    text-align: center;
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: white;
+                    margin-top: 10px;
+                }
+            </style>
+        """, unsafe_allow_html=True)
 
-    # 4. Logout Button
-    if st.button("Logout", use_container_width=True, type="primary"):
-        st.session_state.logged_in = False
-        st.session_state.username = None
-        st.switch_page("main.py")
-# ================= 4. LOAD CSS =================
+        # Avatar dikhane ka Logic (HTML mode for circular effect)
+        import base64
+        if res and res[0]:
+            # Binary data ko Base64 mein convert karein taaki HTML mein use ho sake
+            base64_img = base64.b64encode(res[0]).decode()
+            img_html = f'<div class="profile-container"><img src="data:image/png;base64,{base64_img}" class="circular-img"></div>'
+        else:
+            # Default Avatar
+            img_html = f'<div class="profile-container"><img src="https://www.w3schools.com/howto/img_avatar.png" class="circular-img"></div>'
+        
+        st.markdown(img_html, unsafe_allow_html=True)
+        st.markdown(f'<p class="user-name">Welcome, {st.session_state.username}!</p>', unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:#00ff00; font-size:14px;'>● Online</p>", unsafe_allow_html=True)
+        
+        st.markdown("---")
+
+        # Sidebar Navigation ke liye space (yahan aapke baaki menu items ho sakte hain)
+
+        # Logout Button (Ek hi baar, professional look)
+        if st.button("Logout", use_container_width=True, type="primary"):
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.rerun() 
+    else:
+        st.warning("Please log in.")
+        if st.button("Go to Login Page"):
+            st.switch_page("main.py")
+
+# ================= 4. LOAD CSS & PAGE CONTENT (Unchanged) =================
 try:
     with open("assets/style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -73,70 +88,40 @@ except:
     pass
 
 # Ignore warnings
+import warnings
 warnings.filterwarnings('ignore')
 
 # Dashboard title
 st.markdown("""
-<h1 style='text-align:center;
-font-size:60px;
-font-weight:bold;
-color:white;
-margin-bottom:30px;'>
-
+<h1 style='text-align:center; font-size:55px; font-weight:bold; color:white; margin-bottom:10px;'>
 📊 SuperStore Analytics Dashboard
-
 </h1>
 """, unsafe_allow_html=True)
 
-
-
 # Remove top padding
-st.markdown(
-    """
-    <style>
-    div.block-container {
-        padding-top: 1rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("<style>div.block-container {padding-top: 1rem;}</style>", unsafe_allow_html=True)
 
-# File uploader
-fl = st.file_uploader(
-    ":file_folder: Upload a file",
-    type=["csv", "txt", "xlsx", "xls"]
-)
+# File uploader logic (Same as yours)
+fl = st.file_uploader(":file_folder: Upload a file", type=["csv", "txt", "xlsx", "xls"])
 
-# Read uploaded file
 if fl is not None:
-
     filename = fl.name
     st.write("Uploaded File:", filename)
-
-    # Read CSV or TXT file
     if filename.endswith(".csv") or filename.endswith(".txt"):
         df = pd.read_csv(fl, encoding="ISO-8859-1")
-
-    # Read Excel file
     elif filename.endswith(".xlsx") or filename.endswith(".xls"):
         df = pd.read_excel(fl)
-
 else:
-    df = pd.read_csv(
-    "Superstore.csv",
-    encoding="ISO-8859-1"
-)
+    # Make sure you have this file in your root folder
+    try:
+        df = pd.read_csv("Superstore.csv", encoding="ISO-8859-1")
+    except:
+        st.error("Superstore.csv not found. Please upload a file.")
+        st.stop()
 
 # Create columns
 col1, col2 = st.columns(2)
-
-# Remove extra spaces from column names
 df.columns = df.columns.str.strip()
-
-# Show all columns
-#st.write("Columns in Dataset:", df.columns)
-
 # Find Order Date column automatically
 order_date_col = None
 
