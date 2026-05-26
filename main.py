@@ -1,113 +1,9 @@
-# import streamlit as st
-# import sqlite3
-# import os
-
-# st.write("Current Path:", os.getcwd())
-# st.write("Style Exists:", os.path.exists("assets/style.css"))
-
-# # ================= PAGE CONFIG =================
-# st.set_page_config(
-#     page_title="Login",
-#     layout="wide",
-#     initial_sidebar_state="collapsed"
-# )
-
-# # ================= LOAD CSS =================
-# # Try-except block taaki agar file missing ho toh error na aaye
-# try:
-#     with open("assets/style.css") as f:
-#         st.markdown({f.read}, unsafe_allow_html=True)
-# except FileNotFoundError:
-#     st.error("style.css file not found in assets folder!")
-
-# # ================= HIDE STREAMLIT UI =================
-# st.markdown("""
-# <style>
-# #MainMenu {visibility:hidden;}
-# footer {visibility:hidden;}
-# header {visibility:hidden;}
-# [data-testid="stSidebar"] {display:none;}
-# </style>
-# """, unsafe_allow_html=True)
-
-# # ================= DATABASE =================
-# conn = sqlite3.connect("database.db", check_same_thread=False)
-# cursor = conn.cursor()
-# cursor.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT)")
-# conn.commit()
-
-# # ================= SESSION =================
-# if "logged_in" not in st.session_state:
-#     st.session_state.logged_in = False
-
-# # ================= SIGNUP FUNCTION =================
-# def signup():
-#     st.markdown("<div class='form-title'>Create Account</div>", unsafe_allow_html=True)
-#     new_user = st.text_input("Username", key="signup_user", placeholder="Enter username")
-#     new_password = st.text_input("Password", type="password", key="signup_pass", placeholder="Enter password")
-    
-#     if st.button("Signup", use_container_width=True):
-#         if new_user and new_password:
-#             cursor.execute("INSERT INTO users VALUES (?, ?)", (new_user, new_password))
-#             conn.commit()
-#             st.success("Account Created Successfully!")
-#         else:
-#             st.warning("Please fill all fields")
-
-# # ================= LOGIN FUNCTION =================
-# def login():
-#     st.markdown("<div class='form-title'>Login to your account</div>", unsafe_allow_html=True)
-#     username = st.text_input("Username", key="login_user", placeholder="Enter your username")
-#     password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
-    
-#     if st.button("Login", use_container_width=True):
-#         cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
-#         data = cursor.fetchone()
-#         if data:
-#             st.session_state.logged_in = True
-#             st.rerun() # Latest Streamlit version mein st.rerun() use hota hai
-#         else:
-#             st.error("Invalid Username or Password")
-
-# # ================= MAIN LOGIC =================
-# if st.session_state.logged_in:
-#     # Dashboard check - make sure this file exists
-#     try:
-#         st.switch_page("pages/dashboard.py")
-#     except:
-#         st.write("Logged In! ")
-#         if st.button("Logout"):
-#             st.session_state.logged_in = False
-#             st.rerun()
-# else:
-#     # ===== HERO SECTION (Fixed single-line HTML to avoid raw text error) =====
-#     hero_html = (
-#         '<div class="hero-section">'
-#         '<div class="logo-circle">S</div>'
-#         '<div class="main-title">Welcome Back</div>'
-#         '<div class="sub-title">Sign in to continue to your dashboard</div>'
-#         '</div>'
-#     )
-#     st.markdown(hero_html, unsafe_allow_html=True)
-
-#     # ===== CENTER CARD =====
-#     left, center, right = st.columns([1, 1.5, 1])
-
-#     with center:
-#         # Streamlit tabs automatically apply styles from style.css
-#         tab1, tab2 = st.tabs(["Login", "Signup"])
-        
-#         with tab1:
-#             login()
-            
-#         with tab2:
-#             signup()
-
 import streamlit as st
 import sqlite3
 import os
 
 # ================= DATABASE INITIALIZATION =================
+
 def init_db():
     conn = sqlite3.connect("database.db", check_same_thread=False)
     cursor = conn.cursor()
@@ -183,15 +79,20 @@ def signup():
     if st.button("Create Account", use_container_width=True):
         if new_user and new_password:
             try:
-                # Updated to include the is_admin default (0)
+                # Use a tuple for the values to ensure SQL safety
                 cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", 
                                (new_user, new_password, 0))
-                conn.commit()
-                st.success("Account Created! You can now login.")
+                
+                # CRITICAL: Yahan commit hona bahut zaruri hai
+                conn.commit() 
+                
+                st.success("✅ Account Created! You can now login.")
             except sqlite3.IntegrityError:
-                st.error("Username already exists. Try another one.")
+                st.error("❌ Username already exists. Try another one.")
+            except Exception as e:
+                st.error(f"Error: {e}")
         else:
-            st.warning("Please fill all fields")
+            st.warning("⚠️ Please fill all fields")
 
 def login():
     st.subheader("Welcome Back")
