@@ -30,6 +30,31 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Background image function
+def set_bg(image_file):
+    with open(image_file, "rb") as f:
+        data = f.read()
+
+    encoded = base64.b64encode(data).decode()
+
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Image set karo
+set_bg("assets/login_bg.jpg")
+
 # ================= HIDE STREAMLIT UI & CUSTOM CSS =================
 st.markdown("""
 <style>
