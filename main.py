@@ -1,9 +1,10 @@
 import streamlit as st
 import sqlite3
 import base64
-import json
-import tempfile
-from streamlit_google_auth import Authenticate 
+from google_auth_oauthlib.flow import Flow
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+
 
 # ================= DATABASE INITIALIZATION (SQLite) =================
 conn = sqlite3.connect("database.db", check_same_thread=False)
@@ -54,28 +55,60 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = None
 
-#google Authentication setup 
-# Secrets se JSON file banao temporarily
-google_creds = {
-    "web": {
-        "client_id": st.secrets["google_oauth"]["client_id"],
-        "client_secret": st.secrets["google_oauth"]["client_secret"],
-        "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]],
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token"
+# ================= GOOGLE OAUTH CONFIG & CALLBACK =================
+def get_google_flow():
+    client_config = {
+        "web": {
+            "client_id": st.secrets["google_oauth"]["client_id"],
+            "client_secret": st.secrets["google_oauth"]["client_secret"],
+            "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token"
+        }
     }
-}
+    return Flow.from_client_config(
+        client_config,
+        scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
+        redirect_uri=st.secrets["google_oauth"]["redirect_uri"]
+    )
 
-with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-    json.dump(google_creds, f)
-    temp_path = f.name
-    
-authenticator = Authenticate(
-    secret_credentials_path="assets/client_secret.json",
-    cookie_name="sales_auth",
-    cookie_key="abcdef123456",
-    redirect_uri=st.secrets["google_oauth"]["redirect_uri"],
-)
+def handle_google_callback():
+    params = st.query_params
+    if "code" in params:
+        try:
+            flow = get_google_flow()
+            flow.fetch_token(code=params["code"])
+            id_info = id_token.verify_oauth2_token(
+                flow.credentials.id_token,
+                google_requests.Request(),
+                st.secrets["google_oauth"]["client_id"]
+            )
+            email = id_info.get("email")
+            first_name = id_info.get("given_name", "")
+            username = email.split("@")[0]
+
+            # Database integration (if new user)
+            cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+            user = cursor.fetchone()
+            if not user:
+                cursor.execute(
+                    "INSERT INTO users (username, email, password, first_name) VALUES (?, ?, ?, ?)",
+                    (username, email, "google_auth", first_name)
+                )
+                conn.commit()
+
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.first_name = first_name
+            st.query_params.clear()
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ Google Login Failed: {e}")
+
+# Page load hote hi callback handler chalega
+handle_google_callback()
+
+
 # ================= BACKGROUND IMAGE =================
 def set_bg(image_file):
     try:
@@ -165,24 +198,14 @@ def login():
     except Exception:
         logo_html = ""
  
-    st.markdown(f"""
-        <div class="divider-row">or continue with</div>
-        <div class="google-btn">
-            {logo_html}
-            Continue with Google
-        </div>
-    """, unsafe_allow_html=True)
-    
-
-    #google authentication
-    authenticator.check_authentification()
-    authenticator.login()
-
-    if st.session_state.get("connected"):
-        st.session_state.logged_in = True
-        st.session_state.username = st.session_state.get("user_info", {}).get("email", "")
-        st.session_state.first_name = st.session_state.get("user_info", {}).get("given_name", "")
-        st.rerun()
+    st.markdown('<div class="divider-row">or continue with</div>', unsafe_allow_html=True)
+        
+    # Streamlit button jo click hote hi Google Authentication trigger karega
+    if st.button("🔵 Continue with Google", use_container_width=True, key="google_btn"):
+        flow = get_google_flow()
+        auth_url, state = flow.authorization_url(prompt="consent")
+        st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
+        st.stop()
 
 
 # ================= MAIN UI LOGIC =================
