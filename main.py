@@ -1,6 +1,8 @@
 import streamlit as st
 import sqlite3
 import base64
+import json
+import tempfile
 from streamlit_google_auth import Authenticate 
 
 # ================= DATABASE INITIALIZATION (SQLite) =================
@@ -53,6 +55,21 @@ if "username" not in st.session_state:
     st.session_state.username = None
 
 #google Authentication setup 
+# Secrets se JSON file banao temporarily
+google_creds = {
+    "web": {
+        "client_id": st.secrets["google_oauth"]["client_id"],
+        "client_secret": st.secrets["google_oauth"]["client_secret"],
+        "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]],
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token"
+    }
+}
+
+with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    json.dump(google_creds, f)
+    temp_path = f.name
+    
 authenticator = Authenticate(
     secret_credentials_path="assets/client_secret.json",
     cookie_name="sales_auth",
