@@ -1,0 +1,219 @@
+# 🔐 Google OAuth — Streamlit App Setup Guide
+### Complete Step-by-Step Notes (Hindi + English)
+
+---
+
+## 📌 Yeh Guide Kab Use Karein?
+Jab bhi kisi Streamlit app mein **"Continue with Google"** login button add karna ho.
+
+---
+
+## 🛠️ Tools & Requirements
+
+| Cheez | Details |
+|-------|---------|
+| Language | Python |
+| Framework | Streamlit |
+| Auth Library | `streamlit-google-auth` |
+| Hosting | Streamlit Cloud (share.streamlit.io) |
+| Secret Manager | Google Cloud Console |
+| Cost | **100% Free** |
+
+---
+
+## PART 1 — Google Cloud Console Setup
+
+### Step 1: Google Cloud Console Open Karo
+- URL: https://console.cloud.google.com
+- Apni Gmail se login karo
+
+### Step 2: New Project Banao
+- Upar **"Select a project"** click karo
+- **"New Project"** click karo
+- Project name do (e.g. `dashboard-login-system`)
+- **Create** click karo
+
+### Step 3: OAuth Consent Screen Banao
+- Left menu → **"Google Auth Platform"** ya **"APIs & Services"** → **"OAuth consent screen"**
+- **App name** bharo (e.g. `Sales Analytics`)
+- **User support email** mein apni Gmail select karo
+- **Next** click karo
+- **Audience** → **External** select karo → **Next**
+- **Contact Information** → apni email → **Next**
+- **Finish** → **Create**
+
+### Step 4: OAuth Client ID Banao
+- Left menu → **"Clients"**
+- **"+ Create client"** click karo
+- Application type → **Web application** select karo
+- Name: `Sales Analytics`
+- **Authorized redirect URIs** mein **"+ Add URI"** click karo aur add karo:
+  ```
+  http://localhost:8501
+  https://TUMHARI-APP.streamlit.app
+  ```
+- **Create** click karo
+
+### Step 5: Credentials Save Karo
+- Popup mein **Client ID** aur **Client Secret** dikhega
+- **"Download JSON"** click karo — file save ho jaayegi
+- JSON file Notepad/VS Code mein open karo
+- `"client_secret"` ki value copy karo — `GOCSPX-...` se shuru hoti hai
+
+```json
+{
+  "web": {
+    "client_id": "xxxxx.apps.googleusercontent.com",
+    "client_secret": "GOCSPX-xxxxxxxxxx",   ← YEH COPY KARO
+    ...
+  }
+}
+```
+
+---
+
+## PART 2 — Streamlit Project Setup
+
+### Step 6: Library Install Karo
+```bash
+pip install streamlit-google-auth
+```
+
+### Step 7: requirements.txt mein add karo
+```
+streamlit-google-auth
+```
+
+### Step 8: .gitignore mein add karo ⚠️ IMPORTANT
+```
+.streamlit/secrets.toml
+```
+> ⚠️ Yeh file kabhi GitHub pe push mat karna — client secret expose ho jaata hai!
+
+### Step 9: Local secrets.toml banao (sirf local use ke liye)
+File path: `.streamlit/secrets.toml`
+```toml
+[google_oauth]
+client_id = "TUMHARA_CLIENT_ID.apps.googleusercontent.com"
+client_secret = "GOCSPX-TUMHARA_CLIENT_SECRET"
+redirect_uri = "http://localhost:8501"
+```
+
+---
+
+## PART 3 — Streamlit Cloud Pe Secrets Add Karo
+
+### Step 10: Live App Ka Secrets Add Karo
+1. Apni live Streamlit app open karo
+2. Neeche **right corner** mein **"Manage app"** click karo
+3. **Settings** → **Secrets** tab click karo
+4. Yeh paste karo:
+
+```toml
+[google_oauth]
+client_id = "TUMHARA_CLIENT_ID.apps.googleusercontent.com"
+client_secret = "GOCSPX-TUMHARA_CLIENT_SECRET"
+redirect_uri = "https://TUMHARI-APP.streamlit.app"
+```
+
+5. **Save changes** click karo ✅
+
+---
+
+## PART 4 — app.py mein Google Auth Code
+
+### Step 11: Import aur Setup
+```python
+import streamlit as st
+import sqlite3
+import base64
+from streamlit_google_auth import Authenticate
+
+# Page config ke baad add karo
+authenticator = Authenticate(
+    secret_credentials_path=None,
+    cookie_name="sales_auth",
+    cookie_key="abcdef123456",
+    redirect_uri=st.secrets["google_oauth"]["redirect_uri"],
+)
+```
+
+### Step 12: Login Function Mein Google Button
+```python
+def login():
+    # Normal email/password login
+    email = st.text_input("Email Address", placeholder="example@mail.com")
+    password = st.text_input("Password", type="password", placeholder="••••••••")
+
+    if st.button("Sign In →", use_container_width=True):
+        if email and password:
+            cursor.execute("SELECT * FROM users WHERE email = ? AND password = ?", (email, password))
+            user_info = cursor.fetchone()
+            if user_info:
+                st.session_state.logged_in = True
+                st.session_state.username = user_info[1]
+                st.rerun()
+            else:
+                st.error("❌ Invalid Email or Password")
+        else:
+            st.warning("⚠️ Please fill all fields")
+
+    # Google OAuth Button
+    st.markdown('<div class="divider-row">or continue with</div>', unsafe_allow_html=True)
+    
+    authenticator.check_authentification()
+    authenticator.login()
+
+    if st.session_state.get("connected"):
+        st.session_state.logged_in = True
+        st.session_state.username = st.session_state.get("user_info", {}).get("email", "")
+        st.session_state.first_name = st.session_state.get("user_info", {}).get("given_name", "")
+        st.rerun()
+```
+
+---
+
+## PART 5 — GitHub Pe Push Karo
+
+### Step 13: Safely Push Karo
+```bash
+# Pehle check karo .gitignore mein secrets.toml hai
+git status
+
+# Push karo
+git add .
+git commit -m "Add Google OAuth login"
+git push origin main
+```
+
+> ✅ `.streamlit/secrets.toml` **git status mein nahi dikhna chahiye** — agar dikh raha hai toh push mat karo!
+
+---
+
+## ⚠️ Common Mistakes — Dhyan Rakho
+
+| Galti | Sahi Tarika |
+|-------|-------------|
+| secrets.toml GitHub pe push karna | .gitignore mein add karo |
+| Localhost redirect URI live app pe use karna | Live URL add karo redirect URIs mein |
+| Client secret share karna | Kabhi kisi ko mat batao |
+| GitHub pe directly secrets.toml banana | Streamlit Cloud Secrets use karo |
+
+---
+
+## 🔁 Next Time Checklist
+
+Naya project banate waqt yeh steps follow karo:
+
+- [ ] Google Cloud mein new OAuth Client ID banao
+- [ ] Redirect URI mein naya Streamlit URL add karo
+- [ ] JSON download karo, client secret copy karo
+- [ ] `streamlit-google-auth` install karo
+- [ ] `.gitignore` mein `secrets.toml` add karo
+- [ ] Streamlit Cloud Secrets mein credentials paste karo
+- [ ] `app.py` mein authenticator code add karo
+- [ ] GitHub pe push karo
+
+---
+
+*Guide by: Nisha Singh | Date: June 2026*

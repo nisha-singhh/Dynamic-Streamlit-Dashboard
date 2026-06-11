@@ -5,3 +5,4 @@ openpyxl
 scipy
 matplotlib
 supabase
+streamlit-google-auth

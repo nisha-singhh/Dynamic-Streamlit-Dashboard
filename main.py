@@ -1,12 +1,12 @@
 import streamlit as st
 import sqlite3
+import base64
+from streamlit_google_auth import Authenticate 
 
 # ================= DATABASE INITIALIZATION (SQLite) =================
 conn = sqlite3.connect("database.db", check_same_thread=False)
 cursor = conn.cursor()
 
-
-# Agar table users exist nahi karta to create kar lo
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS users (
 """)
 conn.commit()
 
-
 # ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="Login | Sales Analytics",
@@ -30,46 +29,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Background image function
-def set_bg(image_file):
-    with open(image_file, "rb") as f:
-        data = f.read()
-
-    encoded = base64.b64encode(data).decode()
-
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{encoded}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Image set karo
-set_bg("assets/login_bg.jpg")
-
-# ================= HIDE STREAMLIT UI & CUSTOM CSS =================
+# ================= HIDE STREAMLIT UI =================
 st.markdown("""
 <style>
-    #MainMenu {visibility:hidden;}
-    footer {visibility:hidden;}
-    header {visibility:hidden;}
-    [data-testid="stSidebar"] {display:none;}
-    
-    /* Smooth transitions for the login card */
-    .login-card {
-        transition: transform 0.3s ease;
-    }
-    .login-card:hover {
-        transform: translateY(-5px);
-    }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    [data-testid="stSidebar"] {display: none;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -78,7 +44,7 @@ try:
     with open("assets/style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 except Exception:
-    st.info("Custom CSS file not found, using default styles.")
+    st.info("Custom CSS file not found.")
 
 # ================= SESSION STATE =================
 if "logged_in" not in st.session_state:
@@ -86,9 +52,38 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = None
 
+#google Authentication setup 
+authenticator = Authenticate(
+    secret_credentials_path="assets/client_secret.json",
+    cookie_name="sales_auth",
+    cookie_key="abcdef123456",
+    redirect_uri=st.secrets["google_oauth"]["redirect_uri"],
+)
+# ================= BACKGROUND IMAGE =================
+def set_bg(image_file):
+    try:
+        with open(image_file, "rb") as f:
+            data = f.read()
+        encoded = base64.b64encode(data).decode()
+        st.markdown(f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+    except Exception:
+        pass  # Agar image nahi mili toh CSS gradient use hoga
+
+set_bg("assets/login_bg.png")
+
 # ================= FUNCTIONS =================
 def signup():
-    st.subheader("Create Account")
+    st.markdown('<p class="form-subtitle">Apna naya account banayein</p>', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -105,7 +100,7 @@ def signup():
     with p_col2:
         confirm_password = st.text_input("Confirm Password", type="password", placeholder="••••••••", key="signup_confirm")
 
-    if st.button("Create Account", use_container_width=True):
+    if st.button("Create Account →", use_container_width=True, key="signup_btn"):
         if not (f_name and l_name and username and email and new_password and confirm_password):
             st.warning("⚠️ Please fill all fields")
         elif new_password != confirm_password:
@@ -124,27 +119,53 @@ def signup():
 
 
 def login():
-    st.subheader("Welcome Back")
-    email = st.text_input("Email Address", placeholder="Enter email", key="login_user")
-    password = st.text_input("Password", type="password", placeholder="Enter password", key="login_pass")
+    st.markdown('<p class="form-subtitle">Wapas aaiye! Sign in karein apne account mein</p>', unsafe_allow_html=True)
 
-    if st.button("Login", use_container_width=True):
+    email = st.text_input("Email Address", placeholder="example@mail.com", key="login_user")
+    password = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
+
+    if st.button("Sign In →", use_container_width=True, key="login_btn"):
         if email and password:
             cursor.execute("SELECT * FROM users WHERE email = ? AND password = ?", (email, password))
             user_info = cursor.fetchone()
-
-
             if user_info:
                 st.session_state.logged_in = True
-                st.session_state.username = user_info[1]   # username
-                st.session_state.email = user_info[2]      # email
-                st.session_state.first_name = user_info[4] # first_name
-                st.success(f"Logged in as {user_info[1]} ({user_info[4]})")
+                st.session_state.username = user_info[1]
+                st.session_state.email = user_info[2]
+                st.session_state.first_name = user_info[4]
+                st.success(f"✅ Welcome back, {user_info[4]}!")
                 st.rerun()
             else:
-                st.error("Invalid Email or Password")
+                st.error("❌ Invalid Email or Password")
         else:
             st.warning("⚠️ Please fill all fields")
+
+     # Google logo base64 encode karke load karo
+    try:
+        with open("assets/Logo.jpeg", "rb") as img_file:
+            google_logo = base64.b64encode(img_file.read()).decode()
+        logo_html = f'<img src="data:image/jpeg;base64,{google_logo}" width="18" style="border-radius:3px;">'
+    except Exception:
+        logo_html = ""
+ 
+    st.markdown(f"""
+        <div class="divider-row">or continue with</div>
+        <div class="google-btn">
+            {logo_html}
+            Continue with Google
+        </div>
+    """, unsafe_allow_html=True)
+    
+
+    #google authentication
+    authenticator.check_authentification()
+    authenticator.login()
+
+    if st.session_state.get("connected"):
+        st.session_state.logged_in = True
+        st.session_state.username = st.session_state.get("user_info", {}).get("email", "")
+        st.session_state.first_name = st.session_state.get("user_info", {}).get("given_name", "")
+        st.rerun()
 
 
 # ================= MAIN UI LOGIC =================
@@ -157,29 +178,36 @@ else:
     with left_col:
         st.markdown("""
             <div class="left-side">
-                <h1 class="main-title">Sales Analytics <br>Dashboard</h1>
-                <p class="sub-title">Actionable insights for your business growth.</p>
+                <h1 class="main-title">Sales Analytics<br><span>Dashboard</span></h1>
+                <p class="sub-title">
+                    Apne business ke liye actionable insights.<br>
+                    Track karo, grow karo, succeed karo.
+                </p>
+                <div class="feature-pills">
+                    <span class="pill">⚡ Real-time Data</span>
+                    <span class="pill">🔒 Enterprise Grade</span>
+                    <span class="pill">📊 Smart Reports</span>
+                    <span class="pill">🛡️ Secure</span>
+                </div>
             </div>
         """, unsafe_allow_html=True)
 
     with right_col:
         st.markdown('<div class="login-card">', unsafe_allow_html=True)
-        st.markdown('<div class="logo-circle">⚡</div>', unsafe_allow_html=True)
 
-        tab1, tab2 = st.tabs(["Login", "Signup"])
+        tab1, tab2 = st.tabs(["🔑 Login", "✨ Signup"])
+
         with tab1:
             login()
+
         with tab2:
             signup()
 
         st.markdown("""
-            <div class="google-btn">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
-                Continue with Google
-            </div>
             <div class="footer-text">
-                Secure • Enterprise Grade • Reliable
+                SECURE &nbsp;•&nbsp; ENTERPRISE GRADE &nbsp;•&nbsp; RELIABLE
             </div>
         """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True) 
+        st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown('</div>', unsafe_allow_html=True)

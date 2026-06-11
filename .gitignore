@@ -7,6 +7,9 @@ database.db
 venv/
 __pycache__/
 
+.streamlit/secrets.toml
+assets/client_secret.json
+
 
 # C extensions
 *.so

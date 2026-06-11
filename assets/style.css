@@ -1,177 +1,309 @@
 /* ================= 1. GLOBAL APP STYLING ================= */
 .stApp {
-    background: linear-gradient(135deg, #060816, #090d24, #14002e);
+    background: linear-gradient(135deg, #060816 0%, #090d24 50%, #0d0520 100%);
     min-height: 100vh;
 }
 
 .block-container {
-    padding-top: 1rem;
+    padding-top: 0rem;
     padding-bottom: 0rem;
     max-width: 100%;
 }
 
-/* ================= 2. DESKTOP LAYOUT (Default) ================= */
+/* ================= 2. HERO SECTION LAYOUT ================= */
 .hero-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 60px;
     max-width: 1100px;
-    margin: 30px auto;
-    padding: 40px;
+    margin: 0 auto;
+    padding: 60px 40px;
+    min-height: 100vh;
 }
 
 .left-side {
-    flex: 1;
+    flex: 1.2;
     text-align: left;
 }
 
 .login-card {
     flex: 1;
+    transition: transform 0.3s ease;
 }
 
+.login-card:hover {
+    transform: translateY(-4px);
+}
+
+/* ================= 3. LEFT SIDE CONTENT ================= */
 .logo-circle {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    border-radius: 18px;
     background: linear-gradient(135deg, #3b82f6, #9333ea);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 42px;
+    font-size: 36px;
     font-weight: bold;
-    margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(147,51,234,0.5);
+    margin-bottom: 28px;
+    box-shadow: 0 0 40px rgba(147, 51, 234, 0.35);
 }
 
 .main-title {
-    font-size: 72px;
+    font-size: 64px;
     font-weight: 800;
     color: white;
     line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+}
+
+.main-title span {
+    background: linear-gradient(90deg, #60a5fa, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .sub-title {
-    color: #bfc7d5;
-    font-size: 24px;
-    margin-top: 10px;
-    margin-bottom: 40px;
+    color: rgba(191, 199, 213, 0.8);
+    font-size: 20px;
+    margin-top: 8px;
+    margin-bottom: 36px;
+    line-height: 1.6;
+    max-width: 380px;
 }
 
-/* ================= 3. UI COMPONENTS (Glassmorphism) ================= */
-[data-testid="stExpander"], [data-testid="stTabContent"], .stTabs {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 28px;
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+.feature-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
 }
 
+.pill {
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+/* ================= 4. GLASSMORPHISM CARD ================= */
+[data-testid="stTabContent"],
+.stTabs,
+[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    border-radius: 24px !important;
+    padding: 28px 24px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 0 8px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ================= 5. TYPOGRAPHY ================= */
 .form-title {
     color: white;
-    font-size: 42px;
+    font-size: 36px;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 35px;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 28px;
 }
 
 label {
-    color: white !important;
-    font-size: 17px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.3px !important;
 }
 
+/* ================= 6. INPUTS ================= */
 .stTextInput input {
-    background: rgba(255,255,255,0.08) !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: white !important;
-    border-radius: 14px !important;
-    padding: 14px !important;
-    font-size: 16px !important;
+    border-radius: 12px !important;
+    padding: 13px 16px !important;
+    font-size: 15px !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
 }
 
+.stTextInput input:focus {
+    border-color: rgba(99, 102, 241, 0.6) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.stTextInput input::placeholder {
+    color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ================= 7. BUTTONS ================= */
 .stButton button {
     width: 100%;
-    background: linear-gradient(90deg, #3b82f6, #9333ea);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    padding: 14px;
-    font-size: 18px;
-    font-weight: bold;
-    margin-top: 15px;
-    transition: 0.3s;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #9333ea) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin-top: 12px !important;
+    transition: all 0.3s ease !important;
+    letter-spacing: 0.3px !important;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35) !important;
 }
 
 .stButton button:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 20px rgba(147,51,234,0.6);
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(147, 51, 234, 0.5) !important;
+    filter: brightness(1.08) !important;
+}
+
+.stButton button:active {
+    transform: translateY(0) !important;
+}
+
+/* ================= 8. TABS ================= */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    padding: 4px !important;
+    gap: 4px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 button[data-baseweb="tab"] {
-    color: white !important;
-    font-size: 18px !important;
-    border-radius: 12px !important;
-    background: rgba(255,255,255,0.06) !important;
-    margin-right: 10px;
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    padding: 8px 20px !important;
+    transition: all 0.2s !important;
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(90deg, #3b82f6, #9333ea) !important;
+    color: white !important;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.4) !important;
 }
 
-.stAlert {
+/* ================= 9. DIVIDER & GOOGLE BTN ================= */
+.divider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 13px;
+}
+
+.divider-row::before,
+.divider-row::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
 }
 
-/* ================= 4. MOBILE RESPONSIVE (Fixes) ================= */
+.google-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ================= 10. FOOTER ================= */
+.footer-text {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    margin-top: 20px;
+    letter-spacing: 1.5px;
+}
+
+/* ================= 11. ALERTS ================= */
+.stAlert {
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ================= 12. SUBHEADER ================= */
+.stSubheader, h2, h3 {
+    color: white !important;
+}
+
+/* ================= 13. MOBILE RESPONSIVE ================= */
 @media (max-width: 768px) {
     .hero-section {
-        flex-direction: column; 
+        flex-direction: column;
         text-align: center;
-        padding: 20px;
-        gap: 30px;
-        margin-top: 10px;
+        padding: 24px 16px;
+        gap: 28px;
+        min-height: unset;
     }
 
     .left-side {
         text-align: center;
-        order: 1; /* Title upar aayega */
+        order: 1;
     }
 
     .login-card {
         width: 100%;
-        order: 2; /* Card niche aayega */
+        order: 2;
     }
 
     .logo-circle {
-        margin: 0 auto 15px auto; /* Logo center mein */
-        width: 65px;
-        height: 65px;
-        font-size: 32px;
+        margin: 0 auto 20px auto;
+        width: 56px;
+        height: 56px;
+        font-size: 28px;
     }
 
     .main-title {
-        font-size: 42px !important; /* Mobile ke liye font chota kiya */
+        font-size: 38px !important;
     }
 
     .sub-title {
-        font-size: 18px !important;
-        margin-bottom: 25px;
+        font-size: 16px !important;
+        margin-bottom: 20px;
     }
 
-    .form-title {
-        font-size: 30px !important;
+    .feature-pills {
+        justify-content: center;
     }
 
     button[data-baseweb="tab"] {
-        font-size: 14px !important;
-        padding: 8px !important;
-        margin-right: 5px;
+        font-size: 13px !important;
+        padding: 6px 12px !important;
     }
 }
-
-
-
