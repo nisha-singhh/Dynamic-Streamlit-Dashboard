@@ -63,12 +63,17 @@ def get_google_flow():
             "client_secret": st.secrets["google_oauth"]["client_secret"],
             "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token"
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"  # ← YEH LINE ZAROOR ADD KARO
         }
     }
     return Flow.from_client_config(
         client_config,
-        scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
+        scopes=[
+            "openid", 
+            "https://www.googleapis.com/auth/userinfo.profile", 
+            "https://www.googleapis.com/auth/userinfo.email"
+        ],
         redirect_uri=st.secrets["google_oauth"]["redirect_uri"]
     )
 
