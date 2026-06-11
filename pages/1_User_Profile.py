@@ -20,6 +20,9 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.stop()
 
 current_user = st.session_state.username
+# st.write("Current User:", current_user)
+cursor.execute("SELECT username FROM users")
+# st.write("Database Users:", cursor.fetchall())
 
 # --- SIDEBAR LOGIC (Circular Photo & Logout) ---
 with st.sidebar:
@@ -43,7 +46,7 @@ with st.sidebar:
     else:
         st.image("https://www.w3schools.com/howto/img_avatar.png", width=120)
             
-    st.write(f"Logged in as: **{current_user}**")
+    # st.write(f"Logged in as: **{current_user}**")
     
     if st.button("Logout", type="primary", use_container_width=True):
         st.session_state.logged_in = False
@@ -51,7 +54,7 @@ with st.sidebar:
         st.rerun() 
 
 # --- MAIN CONTENT ---
-st.title(f"👤 Welcome to Your Profile, {current_user}")
+st.title(f"👤 Welcome Back, {current_user}")
 st.markdown("---")
 
 # Layout: col1 (Profile Photo Management) | col2 (Account Details & Security)
@@ -60,12 +63,19 @@ col1, col2 = st.columns([1, 1.5])
 with col1:
     st.subheader("🖼️ Profile Picture")
     
-    # Current Photo Display
+    # st.write("res =", res)
+   # Current Photo Display
     if res and res[0]:
-        st.image(res[0], width=200, caption="Current Photo")
+        image_bytes = io.BytesIO(res[0])
+        img = Image.open(image_bytes)
+        st.image(img, width=200, caption="Current Photo")
     else:
         st.info("No profile picture uploaded yet.")
-        st.image("https://www.w3schools.com/howto/img_avatar.png", width=150)
+        st.image(
+            "https://www.w3schools.com/howto/img_avatar.png",
+            width=150
+        )
+
 
     # Upload Section
     st.markdown("---")
@@ -80,9 +90,19 @@ with col1:
             img_byte_arr = io.BytesIO()
             img.save(img_byte_arr, format=img.format if img.format else "PNG")
             img_blob = img_byte_arr.getvalue()
-            
-            cursor.execute("UPDATE users SET profile_pic = ? WHERE username = ?", (img_blob, current_user))
+
+            cursor.execute(
+                "UPDATE users SET profile_pic = ? WHERE username = ?",
+                (img_blob, current_user)
+            )
             conn.commit()
+            
+             # Debug Check
+            # cursor.execute(
+            #     "SELECT length(profile_pic) FROM users WHERE username=?",
+            #     (current_user,)
+            # )
+
             st.success("✅ Profile picture updated successfully!")
             st.rerun()
 

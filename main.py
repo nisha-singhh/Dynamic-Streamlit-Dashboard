@@ -1,14 +1,28 @@
 import streamlit as st
-import os
-from supabase import create_client, Client
+import sqlite3
 
-# ================= DATABASE INITIALIZATION (SUPABASE) =================
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
-supabase: Client = create_client(url, key)
+# ================= DATABASE INITIALIZATION (SQLite) =================
+conn = sqlite3.connect("database.db", check_same_thread=False)
+cursor = conn.cursor()
+
+
+# Agar table users exist nahi karta to create kar lo
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    first_name TEXT,
+    last_name TEXT,
+    profile_pic BLOB,
+    is_admin INTEGER DEFAULT 0
+)
+""")
+conn.commit()
+
 
 # ================= PAGE CONFIG =================
-# Must stay at the top before rendering any UI!
 st.set_page_config(
     page_title="Login | Sales Analytics",
     page_icon="⚡",
@@ -38,7 +52,7 @@ st.markdown("""
 try:
     with open("assets/style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-except Exception as e:
+except Exception:
     st.info("Custom CSS file not found, using default styles.")
 
 # ================= SESSION STATE =================
@@ -50,69 +64,63 @@ if "username" not in st.session_state:
 # ================= FUNCTIONS =================
 def signup():
     st.subheader("Create Account")
-    
-    # Names Row
+
     col1, col2 = st.columns(2)
     with col1:
         f_name = st.text_input("First Name", placeholder="Nisha", key="signup_fname")
     with col2:
         l_name = st.text_input("Last Name", placeholder="Singh", key="signup_lname")
-        
-    # Email and Password
+
+    username = st.text_input("Username", placeholder="nisha123", key="signup_username")
     email = st.text_input("Email Address", placeholder="example@mail.com", key="signup_email")
-    
+
     p_col1, p_col2 = st.columns(2)
     with p_col1:
         new_password = st.text_input("Password", type="password", placeholder="••••••••", key="signup_pass")
     with p_col2:
         confirm_password = st.text_input("Confirm Password", type="password", placeholder="••••••••", key="signup_confirm")
-    
+
     if st.button("Create Account", use_container_width=True):
-        if not (f_name and l_name and email and new_password and confirm_password):
+        if not (f_name and l_name and username and email and new_password and confirm_password):
             st.warning("⚠️ Please fill all fields")
         elif new_password != confirm_password:
             st.error("❌ Passwords do not match!")
         else:
             try:
-                # Data dictionary
-                user_data = {
-                    "username": email, 
-                    "password": new_password,
-                    "first_name": f_name,
-                    "last_name": l_name
-                }
-                # Supabase Execution
-                response = supabase.table("users").insert(user_data).execute()
-                
-                # Check if insert was successful
-                if response:
-                    st.success("✅ Account Created! Now please login.")
-                    st.balloons()
+                cursor.execute(
+                    "INSERT INTO users (username, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)",
+                    (username, email, new_password, f_name, l_name)
+                )
+                conn.commit()
+                st.success("✅ Account Created! Now please login.")
+                st.balloons()
             except Exception as e:
-                # Yeh line humein asli wajah batayegi (Policy error, Table error, etc.)
-                st.error(f"❌ Backend Error: {e}")
+                st.error(f"❌ Database Error: {e}")
+
+
 def login():
     st.subheader("Welcome Back")
     email = st.text_input("Email Address", placeholder="Enter email", key="login_user")
     password = st.text_input("Password", type="password", placeholder="Enter password", key="login_pass")
-    
+
     if st.button("Login", use_container_width=True):
         if email and password:
-            try:
-                response = supabase.table("users").select("*").eq("username", email).eq("password", password).execute()
-                
-                if response.data:
-                    user_info = response.data[0]
-                    st.session_state.logged_in = True
-                    st.session_state.username = user_info['first_name'] # Stores first name for dashboard welcome panel
-                    st.success(f"Logged in as {user_info['first_name']}")
-                    st.rerun()
-                else:
-                    st.error("Invalid Email or Password")
-            except Exception as e:
-                st.error(f"Error: {e}")
+            cursor.execute("SELECT * FROM users WHERE email = ? AND password = ?", (email, password))
+            user_info = cursor.fetchone()
+
+
+            if user_info:
+                st.session_state.logged_in = True
+                st.session_state.username = user_info[1]   # username
+                st.session_state.email = user_info[2]      # email
+                st.session_state.first_name = user_info[4] # first_name
+                st.success(f"Logged in as {user_info[1]} ({user_info[4]})")
+                st.rerun()
+            else:
+                st.error("Invalid Email or Password")
         else:
             st.warning("⚠️ Please fill all fields")
+
 
 # ================= MAIN UI LOGIC =================
 if st.session_state.logged_in:
@@ -122,7 +130,7 @@ else:
     left_col, right_col = st.columns([1.2, 1])
 
     with left_col:
-        st.markdown(f"""
+        st.markdown("""
             <div class="left-side">
                 <h1 class="main-title">Sales Analytics <br>Dashboard</h1>
                 <p class="sub-title">Actionable insights for your business growth.</p>
