@@ -5,7 +5,8 @@ from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-# ================= DATABASE INITIALIZATION =================
+
+# ================= DATABASE INITIALIZATION (SQLite) =================
 conn = sqlite3.connect("database.db", check_same_thread=False)
 cursor = conn.cursor()
 
@@ -46,15 +47,82 @@ try:
     with open("assets/style.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 except Exception:
-    pass
+    st.info("Custom CSS file not found.")
 
 # ================= SESSION STATE =================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = None
-if "oauth_state" not in st.session_state:
-    st.session_state.oauth_state = "secure_dashboard_state_123"
+
+# ================= GOOGLE OAUTH CONFIG & CALLBACK =================
+def get_google_flow():
+    client_config = {
+        "web": {
+            "client_id": st.secrets["google_oauth"]["client_id"],
+            "client_secret": st.secrets["google_oauth"]["client_secret"],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]]
+        }
+    }
+    
+    # State validation strict check ke liye
+    if "oauth_state" not in st.session_state:
+        st.session_state["oauth_state"] = "secure_dashboard_state_123"
+
+    return Flow.from_client_config(
+        client_config,
+        scopes=[
+            "openid", 
+            "https://www.googleapis.com/auth/userinfo.profile", 
+            "https://www.googleapis.com/auth/userinfo.email"
+        ],
+        redirect_uri=st.secrets["google_oauth"]["redirect_uri"]
+    )
+
+def handle_google_callback():
+    params = st.query_params
+    if "code" in params:
+        try:
+            flow = get_google_flow()
+            flow.fetch_token(code=params["code"])
+            
+            id_info = id_token.verify_oauth2_token(
+                flow.credentials.id_token,
+                google_requests.Request(),
+                st.secrets["google_oauth"]["client_id"]
+            )
+            
+            email = id_info.get("email")
+            first_name = id_info.get("given_name", "")
+            username = email.split("@")[0]
+
+            # Users Checking or Insertion in DB
+            cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+            user = cursor.fetchone()
+            if not user:
+                cursor.execute(
+                    "INSERT INTO users (username, email, password, first_name) VALUES (?, ?, ?, ?)",
+                    (username, email, "google_auth", first_name)
+                )
+                conn.commit()
+
+            # Session maintain
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.first_name = first_name
+            
+            # URL Parameters clear and reload
+            st.query_params.clear()
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ Google Login Failed: {e}")
+
+# Page lifecycle ke start par check lagao
+handle_google_callback()
+
 
 # ================= BACKGROUND IMAGE =================
 def set_bg(image_file):
@@ -74,69 +142,11 @@ def set_bg(image_file):
         </style>
         """, unsafe_allow_html=True)
     except Exception:
-        pass
+        pass  # Agar image nahi mili toh CSS gradient use hoga
 
 set_bg("assets/login_bg.png")
 
-# ================= GOOGLE OAUTH CONFIG =================
-def get_google_flow():
-    client_config = {
-        "web": {
-            "client_id": st.secrets["google_oauth"]["client_id"],
-            "client_secret": st.secrets["google_oauth"]["client_secret"],
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-            "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]]
-        }
-    }
-    return Flow.from_client_config(
-        client_config,
-        scopes=[
-            "openid",
-            "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/userinfo.email"
-        ],
-        redirect_uri=st.secrets["google_oauth"]["redirect_uri"]
-    )
-
-# ================= GOOGLE CALLBACK HANDLER =================
-def handle_google_callback():
-    params = st.query_params
-    if "code" in params:
-        try:
-            flow = get_google_flow()
-            flow.fetch_token(code=params["code"])
-            id_info = id_token.verify_oauth2_token(
-                flow.credentials.id_token,
-                google_requests.Request(),
-                st.secrets["google_oauth"]["client_id"]
-            )
-            email = id_info.get("email")
-            first_name = id_info.get("given_name", "")
-            last_name = id_info.get("family_name", "")
-            username = email.split("@")[0]
-
-            cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-            user = cursor.fetchone()
-            if not user:
-                cursor.execute(
-                    "INSERT INTO users (username, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)",
-                    (username, email, "google_auth", first_name, last_name)
-                )
-                conn.commit()
-
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.email = email
-            st.session_state.first_name = first_name
-            st.query_params.clear()
-            st.rerun()
-        except Exception as e:
-            st.error(f"❌ Google Login Failed: {e}")
-
-handle_google_callback()
-
-# ================= SIGNUP FUNCTION =================
+# ================= FUNCTIONS =================
 def signup():
     st.markdown('<p class="form-subtitle">Apna naya account banayein</p>', unsafe_allow_html=True)
 
@@ -172,7 +182,7 @@ def signup():
             except Exception as e:
                 st.error(f"❌ Database Error: {e}")
 
-# ================= LOGIN FUNCTION =================
+
 def login():
     st.markdown('<p class="form-subtitle">Wapas aaiye! Sign in karein apne account mein</p>', unsafe_allow_html=True)
 
@@ -195,27 +205,30 @@ def login():
         else:
             st.warning("⚠️ Please fill all fields")
 
-    # Divider
-    st.markdown('<div class="divider-row">or continue with</div>', unsafe_allow_html=True)
-
-    # Google logo base64
+     # Google logo base64 encode karke load karo
     try:
-        with open("assets/LOGO.jpeg", "rb") as img_file:
+        with open("assets/Logo.jpeg", "rb") as img_file:
             google_logo = base64.b64encode(img_file.read()).decode()
         logo_html = f'<img src="data:image/jpeg;base64,{google_logo}" width="18" style="border-radius:3px;">'
     except Exception:
         logo_html = ""
+ 
+    def login():
 
-    st.markdown(f'<div class="google-btn">{logo_html} Continue with Google</div>', unsafe_allow_html=True)
+    # ... (Tumhara normal sign in UI form) ...
 
-    if st.button("Continue with Google", use_container_width=True, key="google_btn"):
-        flow = get_google_flow()
-        auth_url, state = flow.authorization_url(
-            prompt="select_account",
-            state=st.session_state["oauth_state"]
-        )
-        st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
-        st.stop()
+        st.markdown('<div class="divider-row">or continue with</div>', unsafe_allow_html=True)
+    
+        if st.button("🔵 Continue with Google", use_container_width=True, key="google_btn"):
+            flow = get_google_flow()
+            # State explicitly pass kar rahe hain validation ke liye
+            auth_url, state = flow.authorization_url(
+                prompt="select_account",
+                state=st.session_state["oauth_state"]
+            )
+            st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
+            st.stop()
+
 
 # ================= MAIN UI LOGIC =================
 if st.session_state.logged_in:
