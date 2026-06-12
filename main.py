@@ -57,7 +57,6 @@ if "username" not in st.session_state:
 
 # ================= GOOGLE OAUTH CONFIG & CALLBACK =================
 def get_google_flow():
-    # Google standard flow ko exact isi hierarchy mein client keys chahiye hoti hain
     client_config = {
         "web": {
             "client_id": st.secrets["google_oauth"]["client_id"],
@@ -69,9 +68,9 @@ def get_google_flow():
         }
     }
     
-    # State parameter backend authentication ke liye mandatory hai
+    # State validation strict check ke liye
     if "oauth_state" not in st.session_state:
-        st.session_state["oauth_state"] = "random_secure_state_string"
+        st.session_state["oauth_state"] = "secure_dashboard_state_123"
 
     return Flow.from_client_config(
         client_config,
@@ -100,7 +99,7 @@ def handle_google_callback():
             first_name = id_info.get("given_name", "")
             username = email.split("@")[0]
 
-            # DB Checking & Insertion
+            # Users Checking or Insertion in DB
             cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = cursor.fetchone()
             if not user:
@@ -110,18 +109,18 @@ def handle_google_callback():
                 )
                 conn.commit()
 
-            # Maintain Session
+            # Session maintain
             st.session_state.logged_in = True
             st.session_state.username = username
             st.session_state.first_name = first_name
             
-            # Parameters clean up
+            # URL Parameters clear and reload
             st.query_params.clear()
             st.rerun()
         except Exception as e:
             st.error(f"❌ Google Login Failed: {e}")
 
-# Call the callback handler at runtime
+# Page lifecycle ke start par check lagao
 handle_google_callback()
 
 
