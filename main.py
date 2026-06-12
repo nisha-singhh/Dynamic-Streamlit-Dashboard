@@ -57,16 +57,22 @@ if "username" not in st.session_state:
 
 # ================= GOOGLE OAUTH CONFIG & CALLBACK =================
 def get_google_flow():
+    # Google standard flow ko exact isi hierarchy mein client keys chahiye hoti hain
     client_config = {
         "web": {
             "client_id": st.secrets["google_oauth"]["client_id"],
             "client_secret": st.secrets["google_oauth"]["client_secret"],
-            "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]]
         }
     }
+    
+    # State parameter backend authentication ke liye mandatory hai
+    if "oauth_state" not in st.session_state:
+        st.session_state["oauth_state"] = "random_secure_state_string"
+
     return Flow.from_client_config(
         client_config,
         scopes=[
@@ -78,7 +84,6 @@ def get_google_flow():
     )
 
 def handle_google_callback():
-    # Streamlit Cloud ke query parameters check karo
     params = st.query_params
     if "code" in params:
         try:
@@ -95,7 +100,7 @@ def handle_google_callback():
             first_name = id_info.get("given_name", "")
             username = email.split("@")[0]
 
-            # Database integration (if new user)
+            # DB Checking & Insertion
             cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = cursor.fetchone()
             if not user:
@@ -105,18 +110,18 @@ def handle_google_callback():
                 )
                 conn.commit()
 
-            # Session values save karo
+            # Maintain Session
             st.session_state.logged_in = True
             st.session_state.username = username
             st.session_state.first_name = first_name
             
-            # Parameters clear karke refresh karo taaki loop na bane
+            # Parameters clean up
             st.query_params.clear()
             st.rerun()
         except Exception as e:
             st.error(f"❌ Google Login Failed: {e}")
 
-# Isko top level par check hone do
+# Call the callback handler at runtime
 handle_google_callback()
 
 
@@ -216,10 +221,11 @@ def login():
     
     if st.button("🔵 Continue with Google", use_container_width=True, key="google_btn"):
         flow = get_google_flow()
-        # prompt="select_account" se user ko account select karne ka option milega clear tarike se
-        auth_url, state = flow.authorization_url(prompt="select_account")
-        
-        # HTML redirect standard form mein execution rokhne ke liye
+        # State explicitly pass kar rahe hain validation ke liye
+        auth_url, state = flow.authorization_url(
+            prompt="select_account",
+            state=st.session_state["oauth_state"]
+        )
         st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
         st.stop()
 
