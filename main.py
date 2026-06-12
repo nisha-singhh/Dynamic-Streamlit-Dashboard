@@ -64,7 +64,7 @@ def get_google_flow():
             "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"  # ← YEH LINE ZAROOR ADD KARO
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
         }
     }
     return Flow.from_client_config(
@@ -92,7 +92,6 @@ def handle_google_callback():
             first_name = id_info.get("given_name", "")
             username = email.split("@")[0]
 
-            # Database integration (if new user)
             cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = cursor.fetchone()
             if not user:
@@ -110,7 +109,6 @@ def handle_google_callback():
         except Exception as e:
             st.error(f"❌ Google Login Failed: {e}")
 
-# Page load hote hi callback handler chalega
 handle_google_callback()
 
 
@@ -203,9 +201,11 @@ def login():
     except Exception:
         logo_html = ""
  
+    def login():
+    # ... (Tumhara normal sign in UI form) ...
+
     st.markdown('<div class="divider-row">or continue with</div>', unsafe_allow_html=True)
-        
-    # Streamlit button jo click hote hi Google Authentication trigger karega
+    
     if st.button("🔵 Continue with Google", use_container_width=True, key="google_btn"):
         flow = get_google_flow()
         auth_url, state = flow.authorization_url(prompt="consent")
