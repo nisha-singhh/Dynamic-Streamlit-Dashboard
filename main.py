@@ -78,20 +78,24 @@ def get_google_flow():
     )
 
 def handle_google_callback():
+    # Streamlit Cloud ke query parameters check karo
     params = st.query_params
     if "code" in params:
         try:
             flow = get_google_flow()
             flow.fetch_token(code=params["code"])
+            
             id_info = id_token.verify_oauth2_token(
                 flow.credentials.id_token,
                 google_requests.Request(),
                 st.secrets["google_oauth"]["client_id"]
             )
+            
             email = id_info.get("email")
             first_name = id_info.get("given_name", "")
             username = email.split("@")[0]
 
+            # Database integration (if new user)
             cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = cursor.fetchone()
             if not user:
@@ -101,14 +105,18 @@ def handle_google_callback():
                 )
                 conn.commit()
 
+            # Session values save karo
             st.session_state.logged_in = True
             st.session_state.username = username
             st.session_state.first_name = first_name
+            
+            # Parameters clear karke refresh karo taaki loop na bane
             st.query_params.clear()
             st.rerun()
         except Exception as e:
             st.error(f"❌ Google Login Failed: {e}")
 
+# Isko top level par check hone do
 handle_google_callback()
 
 
@@ -208,7 +216,10 @@ def login():
     
     if st.button("🔵 Continue with Google", use_container_width=True, key="google_btn"):
         flow = get_google_flow()
-        auth_url, state = flow.authorization_url(prompt="consent")
+        # prompt="select_account" se user ko account select karne ka option milega clear tarike se
+        auth_url, state = flow.authorization_url(prompt="select_account")
+        
+        # HTML redirect standard form mein execution rokhne ke liye
         st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
         st.stop()
 
