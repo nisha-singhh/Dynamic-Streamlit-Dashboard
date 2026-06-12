@@ -63,20 +63,14 @@ def get_google_flow():
             "client_secret": st.secrets["google_oauth"]["client_secret"],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
             "redirect_uris": [st.secrets["google_oauth"]["redirect_uri"]]
         }
     }
-    
-    # State validation strict check ke liye
-    if "oauth_state" not in st.session_state:
-        st.session_state["oauth_state"] = "secure_dashboard_state_123"
-
     return Flow.from_client_config(
         client_config,
         scopes=[
-            "openid", 
-            "https://www.googleapis.com/auth/userinfo.profile", 
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.profile",
             "https://www.googleapis.com/auth/userinfo.email"
         ],
         redirect_uri=st.secrets["google_oauth"]["redirect_uri"]
@@ -87,7 +81,11 @@ def handle_google_callback():
     if "code" in params:
         try:
             flow = get_google_flow()
-            flow.fetch_token(code=params["code"])
+            # PKCE disable karo
+            flow.fetch_token(
+                code=params["code"],
+                include_client_id=True
+            )
             
             id_info = id_token.verify_oauth2_token(
                 flow.credentials.id_token,
@@ -219,13 +217,15 @@ def login():
 
         st.markdown('<div class="divider-row">or continue with</div>', unsafe_allow_html=True)
     
-        if st.button("🔵 Continue with Google", use_container_width=True, key="google_btn"):
+        if st.button("Continue with Google", use_container_width=True, key="google_btn"):
+            import os
+            os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # localhost ke liye
             flow = get_google_flow()
-            # State explicitly pass kar rahe hain validation ke liye
             auth_url, state = flow.authorization_url(
                 prompt="select_account",
-                state=st.session_state["oauth_state"]
+                access_type="offline"  # state parameter hatao
             )
+            st.session_state.oauth_state = state
             st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
             st.stop()
 
